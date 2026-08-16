@@ -1,1 +1,8 @@
-
+index=main source="XmlWinEventLog:Security" EventID=4625
+| stats count as failed_attempts by TargetUserName
+| where failed_attempts >= 5
+| join TargetUserName [
+    search index=main source="XmlWinEventLog:Security" EventID=4624
+    | stats count as success by TargetUserName
+]
+| table TargetUserName failed_attempts success
