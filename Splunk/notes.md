@@ -1,35 +1,65 @@
-installed ISO file on host computer, created a new VM on VMware used Ubuntu-22.04.5-=liver-server-amd64.iso to get a live splunk server.
-memory=12.1gb | processors=4 | hard disck=100GB | network adapter=NAT | network adapter2=Host-Only 
-Prompts allowed me to create my Admin: Splunkadmin
+**Splunk Server Setup Notes (Ubuntu 22.04.5)**
+   *Environment*
+Hypervisor: VMware Workstation
+ISO: ubuntu-22.04.5-live-server-amd64.iso
+VM Specs:
+Memory: 12.1 GB
+CPU: 4 cores
+Disk: 100 GB
+Network Adapter 1: NAT
+Network Adapter 2: Host‑Only
+Splunk Admin User: splunkadmin
 
-Started splunk for the first time with command
+**Installing Splunk Enterprise**
+Started Splunk for the first time:
 sudo -u splunk /opt/splunk/bin/splunk start --accept-license
+This initialized Splunk Web and prompted for admin credentials.
 
-After the license was accepted and the splunk server was up and running the next command was to get splunk to auto start on boot.
-This gave me some trouble as I had to create a specific account to give permissions of splunk to for auto boot since root couldn't do it.
+**Enabling Auto‑Start on Boot**
+Splunk requires a dedicated service user for boot‑start. Root cannot be used.
+Created a service user:
 sudo adduser splunkd
-sudo [password] splunkd
+Assigned ownership of splunk directories:
 sudo chown -R splunkd:splunk /opt/splunk
-sudo /opt/splunk/bin/splunk enable boot-start -splunkd splunk
+Enabled boot-start:
+sudo /opt/splunk/bin/splunk enable boot-start -user splunkd
+Restarted Splunk: 
 sudo systemctl restart splunk
 sudo -u splunk /opt/splunk/bin/splunk status
+Splunk now auto‑starts on boot.
 
-Server is now up and running with auto start enabled. It's time to setup the splunk web server.
+**Accessing Splunk Web**
+Opened Splunk Web from the host machine:
 http://192.168.138.129:8000
+**Enabled log receiving (Port 9997)**
+Configured Splunk to receive logs from the Universal Forwarder.
+Settings → Forwarding and Receiving → Configure Receiving → Add Port 9997
+Verified:
+sudo ss -tlnp | grep 9997
+Output:
+LISTEN 0 128 0.0.0.0:9997
 
-Enabled receiving on port 9997 for UF logs.
-settings > Forwarding and receiving > configure receiving > add port 9997
-OR on the Ubuntu command line
-sudo -u splunk /opt/splunk/bin/splunk enable listen 9997
+**VirtualBox Issues**
+Originally attempted this setup in Oracle VirtualBox.
+Spent 2–3 days troubleshooting ingestion issues — Windows logs were coming through except Sysmon, which refused to ingest properly.
+Completed more research on Oracle VirtualBox and found it's unreliable and commonly has broken host only netowrk adapters and performance issues.
 
-**I first started this journey on Oracle VirtualBox I spent 2-3 days altering and configuring the windows and splunk servers and settings. Only to find out that Oracle VirtualBox was very unreliable, I switched over to VMware which was a much smoother operation. Oracle VirtualBox was ingesting all the logs except for Sysmon and I couldn't troulbeshoot it to work for Sysmon until I swapped over to VMware.**
+Switched to VMware Workstation and ingestion immediately became stable and reliable.
 
-At this time logs were being ingested and Splunk was on auto-start on boot. index=* was showing plenty of leg ingestion.
+**Log Ingestion Verification**
+Confirmed logs were flowing:
+index=*
+verified forwarder connection:
 sudo -u splunk /opt/splunk/bin/splunk list forward-server
 
-sudo ss -tlnp | grep 9997
-Listen 0  128   0.0.0.0:9997
+**XML Field Extraction Issue (Solved)**
+Initially, XML logs were ingesting but fields were not extracted.
+Queries like:
+index=* sourcetype=WinEventLog:Security EventID=4625
+returned events, but fields such as TargetUserName were missing.
+*Root cause*:  Splunk_TA_windows was installed on the Windows UF, but not on the Splunk server.
+*Fix*:  Installed Splunk_TA_windows on Splunk Web:
+Apps → Manage Apps → Install app from file
+After installation, XML fields were extracted correctly and SPL detections began working.
 
-At this point I stopped configuring splunk for a long time and focused my energy on the Windows10 machine. Come to find out I am getting all of my XML logs ingestion but when querying for such logs I wasn't able to extract the fields I wanted. IE 'index=* sourcetype=WinEventLog:Security EventID 4625' this was able to find logs yes, but my SPL wasn't working and was unable to find TargetUserName. It wasn't until later I found out I needed to also install Splunk_TA_Windows addon ONTO the actual splunk web server. So I downloaded the addon onto my main computer host.
-Launch splunk web server > under apps "Manage" > install app from file > installed splunk addon
-Now I have all the extracted fields I need to correctly query XML logs. This was the moment everything was finally tied together.
+This was the moment the entire pipeline came together.
