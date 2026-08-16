@@ -75,4 +75,7 @@ index=main source="XmlWinEventLog:Security" EventID=4625
 | table TargetUserName failed_attempts success
 
 | TargetUserName | failed_attempts | success |
+
 |     Victim     |        8        |     1   |
+
+
