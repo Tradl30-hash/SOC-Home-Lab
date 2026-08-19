@@ -12,25 +12,34 @@ No domain — local accounts only
 
 This machine acts as the attacker/victim environment for generating real authentication and Sysmon events.
 
-2. Install Splunk Universal Forwarder
-Installed necessary (equipment/files) afterwards ran command to check installation process and running
+2. Splunk Universal Forwarder Installation
+The Splunk Universal Forwarder (UF) was installed on the Windows 10 endpoint to forward logs to the Splunk server.
+
+Forwarding configuration:
 Get-Service SplunkForwarder
 Returned: Status - running | Name - SplunkForwarder | DisplayName - SplunkForwarder
 Set the forward address for logs to begin flowing.
 "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe" add forward-server 192.168.138.129:9997
 
-used commands such as:
+Verification:
+- sudo /opt/splunk/bin/splunk list forward-server
+- PS C:\Windows\System32> cd "C\Program Files\SplunkuniversalForwarder\bin" ./Splunk.exe list forward-server
+- Get-Service SplunkForwarder
+
+enabled auto start for splunk UF:
+PS C:\Program Files\SplunkUniversalForwarder\bin> .\Splunk.exe enable boot-start
+
+used commands such as: to check if files were coming through the correct local file.
 ./splunk.exe btool inputs list --debug 
 ./splunk.exe btool outputs list --debug 
+
 
 Local Account Creation (Victim / Attacker / Admin)
 Using lusrmgr.msc, I created three local accounts to support brute‑force and authentication testing:
 
-Victim — target account for failed logon attempts
-
-Attacker — account used to generate brute‑force activity
-
-Admin — administrative account for configuration and management
+- Victim - target account for failed logon attempts
+- Attacker - account used to generate brute‑force activity
+- Admin - administrative account for configuration and management
 
 Each account was assigned a password and verified through successful login.
 These accounts are essential for producing EventID 4625 (failed logon) and EventID 4624 (successful logon).
@@ -52,14 +61,8 @@ splunk list forward-server
 splunk list monitor
 This ensures Windows Event Logs are continuously forwarded to Splunk.
 
-4. XML Rendering for Windows Event Logs
-To support proper field extraction (e.g., TargetUserName, LogonType, Status), the UF was configured to forward logs in XML format.
-
-inputs.conf includes:
-
-Code
-renderXml = 1
-This is required for Splunk_TA_windows to parse Windows Event Logs correctly.
+3. Verified Sysmon logs were running through Windows Event Viewer:
+   Applications and Services > Microsoft > Windows > Sysmon > Operational
 
 5. Sysmon Installation & Configuration Installed both sysinternals SYSMON and sysmon-config
 
