@@ -61,7 +61,7 @@ Code
 renderXml = 1
 This is required for Splunk_TA_windows to parse Windows Event Logs correctly.
 
-5. Sysmon Installation & Configuration
+5. Sysmon Installation & Configuration Installed both sysinternals SYSMON and sysmon-config
 
 Sysmon was installed using Sysinternals to provide detailed endpoint telemetry such as:
 Process creation
