@@ -35,13 +35,30 @@ On Windows UF:
 Enable Auto-Start:
 - .\splunk.exe enable boot-start
 
+Installed Splunk_TA_Windows on enpoint machine through splunk website.
+- C:\Program Files\SplunkUniversalForwarder\etc\apps\Splunk_TA_Windows
+
+
+**3. Inputs and Outputs Configuration**
+Files in this repo
+- SOC-Home-Lab/Windows-Endpoint/Inputs.conf — UF monitor definitions and XML rendering settings.
+- SOC-Home-Lab/Windows-Endpoint/Outputs.conf — UF tcpout stanza pointing to the Splunk indexer.
+
+What these files do
+
+- inputs.conf tells the Universal Forwarder which Windows event channels to monitor and ensures events are forwarded in XML so Splunk can extract fields. In this lab the monitored channels are: Security; System; Application; Microsoft-Windows-PowerShell/Operational; Microsoft-Windows-Sysmon/Operational. The file also enables XML rendering (renderXml = 1) for the Security channel so fields like TargetUserName, LogonType, and Status are available to Splunk_TA_windows.
+
+outputs.conf configures the forward destination for the UF. It contains the tcpout stanza that points to your Splunk server IP and port (192.168.138.129:9997).
+
+Where the UF reads these files on the Windows host
+
 *Troubleshooting Commands*
 Used to confirm correct configuration paths:
-.\splunk.exe btool inputs list --debug
-.\splunk.exe btool outputs list --debug
+- .\splunk.exe btool inputs list --debug
+- .\splunk.exe btool outputs list --debug
 These commands helped verif that the UF was reading the correct configuration files.
 
-**3. Local Account Creation (Victim / Attacker / Admin)**
+**4. Local Account Creation (Victim / Attacker / Admin)**
 *Using lusrmgr.msc, three local accounts were created to support authentication and brute‑force testing:*
 - Victim — target account for failed logon attempts
 - Attacker — account used to generate brute‑force activity
@@ -56,14 +73,14 @@ These accounts generate the key Windows Security Events:
 
 These events are essential for brute‑force correlation detections.
 
-**4. Windows Event Log Forwarding (XML Rendering Enabled)**
+**5. Windows Event Log Forwarding (XML Rendering Enabled)**
 To ensure proper field extraction (e.g., TargetUserName, EventID, Status), Windows Event Logs were configured to forward in XML format.
 
 inputs.conf includes:
 - renderXml = 1
 This setting is required for Splunk_TA_windows to parse Windows Event Logs correctly.
 
-**5. Sysmon Installation & Configuration**
+**6. Sysmon Installation & Configuration**
 *Sysmon was installed using Sysinternals to provide detailed endpoint telemetry, including:*
 - Process creation
 - Network connections
