@@ -1,1 +1,12 @@
+Project Overview
+This lab simulates a real SOC environment using:
 
+A Windows 10 endpoint generating Security Logs, Sysmon telemetry, and PowerShell Operational logs
+
+A Splunk Enterprise server ingesting logs via the Universal Forwarder
+
+A full XML‑based parsing pipeline using Splunk_TA_Windows
+
+Detection engineering including brute‑force correlation logic and Sysmon‑based behavioral analysis
+
+The goal is to demonstrate practical SOC analyst and detection engineer skills through a fully functioning telemetry pipeline and real attack simulations.
