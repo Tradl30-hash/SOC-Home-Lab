@@ -1,18 +1,10 @@
 1. Windows 10 VM Setup
 The Windows 10 endpoint was built as a dedicated victim machine inside VMware Workstation, configured with:
 
-Memory: 8 GB
-
-Processors: 4
-
-Hard Disk (NVMe): 60 GB
-
-Networking: NAT + Host‑Only
-
 Installation Media: Windows 10 Pro ISO
 
 This VM provides a clean environment for authentication testing, Sysmon telemetry, and brute‑force simulation.
-All testing was performed using local accounts only — no domain.
+All testing was performed using local accounts only no domain.
 
 2. Splunk Universal Forwarder Installation
 The Splunk Universal Forwarder (UF) was installed to forward Windows logs to the Splunk Enterprise server.
